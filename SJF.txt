@@ -1,0 +1,89 @@
+def sjf_preemptive(arrival_times, burst_times):
+    n = len(arrival_times)
+    remaining_times = burst_times.copy()
+    complete = 0
+    time = 0
+    waiting_time = [0] * n
+    turnaround_time = [0] * n
+    completion_time = [0] * n
+    gantt_chart = []
+
+    while complete < n:
+        # Find the process with the minimum remaining time at the current time
+        min_time = float('inf')
+        min_index = -1
+
+        for i in range(n):
+            if (arrival_times[i] <= time) and (remaining_times[i] < min_time) and (remaining_times[i] > 0):
+                min_time = remaining_times[i]
+                min_index = i
+
+        if min_index != -1:
+            # Execute the process for 1 unit of time
+            remaining_times[min_index] -= 1
+            gantt_chart.append(min_index)
+            time += 1
+
+            if remaining_times[min_index] == 0:
+                complete += 1
+                completion_time[min_index] = time
+                turnaround_time[min_index] = completion_time[min_index] - arrival_times[min_index]
+                waiting_time[min_index] = turnaround_time[min_index] - burst_times[min_index]
+        else:
+            # If no process is ready, just increment time
+            time += 1
+
+    return waiting_time, turnaround_time, completion_time, gantt_chart
+
+
+def print_gantt_chart(gantt_chart):
+    print("Gantt Chart:")
+
+    # Print process representation
+    for i in range(len(gantt_chart)):
+        print(f"| P{gantt_chart[i] + 1} ", end="")
+    print("|")
+
+    # Print time intervals with vertical lines
+    print("0", end="")
+    for i in range(len(gantt_chart)):
+        print("----", end="")
+    print(len(gantt_chart))
+
+    # Print the time intervals below the Gantt chart
+    for i in range(len(gantt_chart) + 1):
+        print(f"{i}", end="   ")
+    print()
+
+
+def main():
+    n = int(input("Enter number of processes: "))
+    arrival_times = []
+    burst_times = []
+
+    for i in range(n):
+        arrival_time = int(input(f"Enter arrival time for process {i + 1}: "))
+        burst_time = int(input(f"Enter burst time for process {i + 1}: "))
+        arrival_times.append(arrival_time)
+        burst_times.append(burst_time)
+
+    waiting_time, turnaround_time, completion_time, gantt_chart = sjf_preemptive(arrival_times, burst_times)
+
+    # Calculate averages
+    avg_waiting_time = sum(waiting_time) / n
+    avg_turnaround_time = sum(turnaround_time) / n
+
+    # Print the results
+    print("\nProcess\tArrival Time\tBurst Time\tCompletion Time\tWaiting Time\tTurnaround Time")
+    for i in range(n):
+        print(
+            f"{i + 1}\t{arrival_times[i]}\t\t{burst_times[i]}\t\t{completion_time[i]}\t\t{waiting_time[i]}\t\t{turnaround_time[i]}")
+
+    print(f"\nAverage Waiting Time: {avg_waiting_time:.2f}")
+    print(f"Average Turnaround Time: {avg_turnaround_time:.2f}")
+
+    print_gantt_chart(gantt_chart)
+
+
+if __name__ == "__main__":
+    main()
