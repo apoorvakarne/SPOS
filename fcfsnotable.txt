@@ -1,0 +1,61 @@
+#include<iostream>
+#define MAX 20
+using namespace std;
+
+int main() {
+    int n, ct[MAX], bt[MAX], at[MAX], wt[MAX], tat[MAX];
+    float total_tat = 0, total_wt = 0;
+
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter burst time for P[" << i + 1 << "]: ";
+        cin >> bt[i];
+        cout << "Enter arrival time for P[" << i + 1 << "]: ";
+        cin >> at[i];
+    }
+
+    // Calculate completion time, waiting time, and turnaround time
+    ct[0] = at[0] + bt[0]; // Initialize the first process completion time
+    tat[0] = ct[0] - at[0]; // Turnaround time for the first process
+    wt[0] = tat[0] - bt[0]; // Waiting time for the first process
+    total_tat += tat[0];
+    total_wt += wt[0];
+
+    for (int i = 1; i < n; i++) {
+        if (ct[i - 1] < at[i]) {
+            ct[i] = at[i] + bt[i]; // CPU waits for the next process to arrive
+        } else {
+            ct[i] = ct[i - 1] + bt[i]; // CPU continues to the next process
+        }
+        
+        tat[i] = ct[i] - at[i];  // Calculate turnaround time
+        wt[i] = tat[i] - bt[i];  // Calculate waiting time
+        total_tat += tat[i];
+        total_wt += wt[i];
+    }
+
+    // Display the Gantt Chart
+    cout << "\nGantt Chart:\n";
+    for (int i = 0; i < n; i++) {
+        cout << " P" << i + 1 << " |";
+    }
+    cout << endl;
+    for (int i = 0; i < n; i++) {
+        cout << (i == 0 ? at[0] : ct[i - 1]) << "\t";
+    }
+    cout << ct[n - 1] << endl;
+
+    // Display turnaround time and waiting time for each process
+    cout << "\nTurnaround time and Waiting time for each process:";
+    for (int i = 0; i < n; i++) {
+        cout << "\nP[" << i + 1 << "] - Turnaround time: " << tat[i] << ", Waiting time: " << wt[i];
+    }
+
+    // Calculate and display average turnaround time and waiting time
+    cout << "\n\nAverage Turnaround Time: " << total_tat / n;
+    cout << "\nAverage Waiting Time: " << total_wt / n << endl;
+
+    return 0;
+}

@@ -1,0 +1,112 @@
+# Function to calculate waiting time, turnaround time, and completion time
+def calculate_times(processes, arrival_times, burst_times, priorities):
+    n = len(processes)
+    waiting_times = [0] * n
+    turnaround_times = [0] * n
+    completion_times = [0] * n
+    is_completed = [False] * n  # Tracks completed processes
+
+    current_time = 0
+    completed = 0
+
+    while completed != n:
+        # Find the highest priority process that has arrived and is not completed
+        highest_priority = float('inf')
+        index = -1
+        for i in range(n):
+            if (arrival_times[i] <= current_time and not is_completed[i]
+                    and priorities[i] < highest_priority):
+                highest_priority = priorities[i]
+                index = i
+
+        # If no process has arrived, increment time
+        if index == -1:
+            current_time += 1
+            continue
+
+        # Update completion, waiting, and turnaround times
+        start_time = current_time
+        current_time += burst_times[index]
+        completion_times[index] = current_time
+        turnaround_times[index] = completion_times[index] - arrival_times[index]
+        waiting_times[index] = turnaround_times[index] - burst_times[index]
+        is_completed[index] = True
+        completed += 1
+
+    return waiting_times, turnaround_times, completion_times
+
+# Function to display the Gantt chart with time markers
+def display_gantt_chart(processes, burst_times, arrival_times, priorities):
+    n = len(processes)
+    current_time = 0
+    is_completed = [False] * n
+    completed = 0
+    gantt_chart = []
+    time_line = [0]  # Track time markers for each step in Gantt chart
+
+    while completed != n:
+        highest_priority = float('inf')
+        index = -1
+
+        # Find the highest priority process that has arrived and is not completed
+        for i in range(n):
+            if (arrival_times[i] <= current_time and not is_completed[i]
+                    and priorities[i] < highest_priority):
+                highest_priority = priorities[i]
+                index = i
+
+        if index == -1:
+            gantt_chart.append("Idle")
+            current_time += 1
+        else:
+            gantt_chart.append(f"P{processes[index]}")
+            current_time += burst_times[index]
+            is_completed[index] = True
+            completed += 1
+
+        time_line.append(current_time)
+
+    print("\nGantt Chart:")
+    print("-----------")
+    for block in gantt_chart:
+        print(f"|  {block}  ", end="")
+    print("|")
+
+    # Display the timeline below the Gantt chart
+    for time in time_line:
+        print(f"{time:<6}", end="")
+    print("\n")
+
+# Main function
+def priority_scheduling():
+    # Input number of processes
+    n = int(input("Enter the number of processes: "))
+    
+    processes = []
+    arrival_times = []
+    burst_times = []
+    priorities = []
+
+    # Input details for each process
+    for i in range(n):
+        print(f"\nProcess {i + 1}:")
+        processes.append(i + 1)
+        arrival_times.append(int(input("Enter arrival time: ")))
+        burst_times.append(int(input("Enter burst time: ")))
+        priorities.append(int(input("Enter priority (lower number = higher priority): ")))
+
+    # Calculate times
+    waiting_times, turnaround_times, completion_times = calculate_times(
+        processes, arrival_times, burst_times, priorities
+    )
+
+    # Display the results in a table format
+    print("\nProcess\tArrival Time\tBurst Time\tPriority\tWaiting Time\tTurnaround Time\tCompletion Time")
+    for i in range(n):
+        print(f"P{processes[i]}\t{arrival_times[i]}\t\t{burst_times[i]}\t\t{priorities[i]}\t\t{waiting_times[i]}\t\t{turnaround_times[i]}\t\t{completion_times[i]}")
+
+    # Display the Gantt chart with time markers
+    display_gantt_chart(processes, burst_times, arrival_times, priorities)
+
+# Run the Priority Scheduling simulation
+priority_scheduling()

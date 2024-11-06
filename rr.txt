@@ -1,0 +1,95 @@
+# Function to calculate waiting time and turnaround time for each process
+def calculate_times(processes, arrival_times, burst_times, time_quantum):
+    n = len(processes)
+    remaining_times = burst_times.copy()  # Remaining burst time for each process
+    waiting_times = [0] * n
+    turnaround_times = [0] * n
+    completion_times = [0] * n
+    current_time = 0
+    gantt_chart = []
+    time_line = [0]
+
+    # Track whether all processes are completed
+    while True:
+        done = True
+
+        # Iterate over all processes in a round-robin manner
+        for i in range(n):
+            if remaining_times[i] > 0:  # Process is not yet completed
+                done = False  # Mark as incomplete
+
+                # Check if process has arrived
+                if arrival_times[i] <= current_time:
+                    # Execute for a time quantum or the remaining burst time
+                    execution_time = min(time_quantum, remaining_times[i])
+                    gantt_chart.append(f"P{processes[i]}")
+                    time_line.append(current_time + execution_time)
+
+                    # Update current time and remaining burst time
+                    current_time += execution_time
+                    remaining_times[i] -= execution_time
+
+                    # If process is completed
+                    if remaining_times[i] == 0:
+                        completion_times[i] = current_time
+                        turnaround_times[i] = completion_times[i] - arrival_times[i]
+                        waiting_times[i] = turnaround_times[i] - burst_times[i]
+                else:
+                    # Add idle time if process has not arrived
+                    gantt_chart.append("Idle")
+                    current_time += 1
+                    time_line.append(current_time)
+        
+        # Break if all processes are completed
+        if done:
+            break
+
+    return waiting_times, turnaround_times, completion_times, gantt_chart, time_line
+
+# Function to display the Gantt chart with time markers
+def display_gantt_chart(gantt_chart, time_line):
+    print("\nGantt Chart:")
+    print("------------")
+    
+    # Print each process execution in the Gantt chart
+    for block in gantt_chart:
+        print(f"|  {block}  ", end="")
+    print("|")
+    
+    # Print the timeline below each process in Gantt chart
+    for time in time_line:
+        print(f"{time:<7}", end="")
+    print("\n")
+
+# Main function
+def round_robin_scheduling():
+    # Input number of processes and time quantum
+    n = int(input("Enter the number of processes: "))
+    time_quantum = int(input("Enter the time quantum: "))
+    
+    processes = []
+    arrival_times = []
+    burst_times = []
+
+    # Input details for each process
+    for i in range(n):
+        print(f"\nProcess {i + 1}:")
+        processes.append(i + 1)
+        arrival_times.append(int(input("Enter arrival time: ")))
+        burst_times.append(int(input("Enter burst time: ")))
+
+    # Calculate waiting times, turnaround times, and completion times
+    waiting_times, turnaround_times, completion_times, gantt_chart, time_line = calculate_times(
+        processes, arrival_times, burst_times, time_quantum
+    )
+
+    # Display the results in a table format
+    print("\nProcess\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\tCompletion Time")
+    for i in range(n):
+        print(f"\tP{processes[i]}\t\t\t{arrival_times[i]}\t\t\t{burst_times[i]}\t\t\t\t{waiting_times[i]}\t\t\t{turnaround_times[i]}\t\t\t{completion_times[i]}")
+
+    # Display the Gantt chart with time markers
+    display_gantt_chart(gantt_chart, time_line)
+
+# Run the Round Robin Scheduling simulation
+round_robin_scheduling()
